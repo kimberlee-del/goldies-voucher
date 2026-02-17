@@ -5,69 +5,222 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Goldies Voucher</title>
     <style>
-      body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; margin:0; padding:24px; background:#fff; }
-      .wrap { max-width:520px; margin:0 auto; text-align:center; }
-      .card { border:1px solid #e6e6e6; border-radius:16px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,0.04); }
-      .logo { margin: 6px 0 14px; }
+      body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; margin:0; padding:18px; background:#fff; }
+      .wrap { max-width:520px; margin:0 auto; }
+      .logo { text-align:center; margin: 6px 0 14px; }
       .logo img { max-width: 190px; height:auto; }
-      .title { font-size:18px; font-weight:800; margin: 6px 0 6px; }
-      .sub { color:#666; font-size:13px; margin: 0 0 16px; line-height:1.35; }
-      .code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-              background:#f6f6f6; border-radius:12px; padding:10px 12px; display:inline-block; margin: 8px 0 14px; }
-      .btn { display:block; width:100%; border:0; border-radius:14px; padding:14px 14px; font-size:16px; font-weight:800;
-             background:#111; color:#fff; cursor:pointer; }
-      .tiny { margin-top:10px; font-size:12px; color:#777; }
-      a { color:#111; }
+      .card { border:1px solid #e6e6e6; border-radius:16px; padding:16px; box-shadow:0 2px 10px rgba(0,0,0,0.04); }
+      .row { margin: 10px 0; }
+      .label { font-size:12px; color:#666; }
+      .value { font-size:16px; font-weight:800; }
+      .big { font-size:28px; font-weight:900; }
+      .status { display:inline-block; padding:6px 10px; border-radius:999px; font-weight:900; font-size:12px; }
+      .active { background:#e9f7ef; color:#1e7e34; }
+      .used { background:#fbeaea; color:#a71d2a; }
+      .expired { background:#fff3cd; color:#8a6d3b; }
+      .nf { background:#eee; color:#444; }
+      select, input { width:100%; padding:10px; border-radius:12px; border:1px solid #ccc; font-size:16px; box-sizing:border-box; }
+      button { width:100%; padding:12px; border-radius:12px; border:0; font-size:16px; font-weight:900; cursor:pointer; }
+      .btn { background:#111; color:#fff; }
+      .btn2 { background:#bbb; color:#fff; }
+      .msg { background:#f6f6f6; padding:10px; border-radius:12px; }
+      .hint { font-size:12px; color:#666; margin-top:8px; line-height:1.35; }
+      hr { border:none; border-top:1px solid #eee; margin:16px 0; }
     </style>
   </head>
   <body>
     <div class="wrap">
+      <div class="logo">
+        <img src="https://drive.google.com/thumbnail?id=1jXoGLOHmYf3qktEjOL56LL1CyzBbfQ-D&sz=w400" alt="Goldies"
+             onerror="this.style.display='none';" />
+      </div>
+
       <div class="card">
-        <!-- Optional logo: if you want, you can point this to a hosted logo later -->
-        <div class="logo" aria-hidden="true">
-          <!-- If you DON'T want a logo here, delete this img tag -->
-          <img src="https://drive.google.com/thumbnail?id=1jXoGLOHmYf3qktEjOL56LL1CyzBbfQ-D&sz=w400"
-               alt="Goldies"
-               onerror="this.style.display='none';" />
+        <div class="row">
+          <div class="label">Voucher Code</div>
+          <div class="value" id="code">—</div>
         </div>
 
-        <div class="title">Goldies Voucher</div>
-        <div class="sub">
-          Tap the button below to open the voucher page.
-          <br/>This avoids iPhone redirect blocks.
+        <div class="row">
+          <span class="status nf" id="status">LOADING</span>
         </div>
 
-        <div id="codeBox" class="code" style="display:none;"></div>
-
-        <button class="btn" id="openBtn" type="button">Open voucher</button>
-
-        <div class="tiny">
-          If it still won’t open, tap and hold the button → Open in Safari.
+        <div class="row">
+          <div class="label">Value</div>
+          <div class="big" id="amount">—</div>
         </div>
+
+        <div class="row">
+          <div class="label">Message</div>
+          <div class="msg" id="message">Loading…</div>
+        </div>
+
+        <div id="redeemedBlock" style="display:none;">
+          <div class="row" style="font-size:12px; color:#666;">
+            <b>Redeemed:</b> <span id="redeemedAt"></span><br/>
+            <b>Store:</b> <span id="redeemedStore"></span><br/>
+            <b>Staff:</b> <span id="redeemedBy"></span>
+          </div>
+        </div>
+
+        <hr/>
+
+        <div class="row">
+          <div class="label">Store</div>
+          <select id="store"></select>
+        </div>
+
+        <div class="row">
+          <div class="label">Staff (initials or name)</div>
+          <input id="staff" placeholder="e.g. Kim / Jess / HO" />
+        </div>
+
+        <div class="row">
+          <button class="btn" id="redeemBtn">Redeem now</button>
+          <div class="hint">After redeeming, process the item in Lightspeed as <b>FOC</b>.</div>
+        </div>
+
+        <div class="row" id="result"></div>
       </div>
     </div>
 
     <script>
-      // Get voucher code from URL
-      const params = new URLSearchParams(window.location.search);
-      const code = params.get("code") || "";
-
-      // ✅ Your Apps Script /exec URL (keep quotes)
+      // ==== CONFIG: your Apps Script /exec URL ====
       const WEBAPP = "https://script.google.com/macros/s/AKfycbzzCGQ3vblEaVuOw1SZwIc-s_dmRsxfEJJtMLI-avIUaZpFXPCu9xGhvsH4fwmxpeMO/exec";
 
-      const dest = WEBAPP + "?code=" + encodeURIComponent(code);
+      // Read code from URL
+      const params = new URLSearchParams(location.search);
+      const CODE = params.get("code") || "";
 
-      // Show code (helpful for staff)
-      const codeBox = document.getElementById("codeBox");
-      if (code) {
-        codeBox.style.display = "inline-block";
-        codeBox.textContent = "Code: " + code;
+      document.getElementById("code").textContent = CODE || "—";
+
+      function jsonp(url) {
+        return new Promise((resolve, reject) => {
+          const cb = "cb_" + Math.random().toString(36).slice(2);
+          window[cb] = (data) => {
+            delete window[cb];
+            script.remove();
+            resolve(data);
+          };
+          const script = document.createElement("script");
+          script.src = url + (url.includes("?") ? "&" : "?") + "callback=" + cb;
+          script.onerror = () => {
+            delete window[cb];
+            script.remove();
+            reject(new Error("JSONP failed"));
+          };
+          document.body.appendChild(script);
+        });
       }
 
-      // User-initiated navigation (works even when auto redirects are blocked)
-      document.getElementById("openBtn").addEventListener("click", () => {
-        window.location.href = dest;
+      function setStatus(status) {
+        const el = document.getElementById("status");
+        el.textContent = status;
+        el.className = "status " + (
+          status === "ACTIVE" ? "active" :
+          status === "USED" ? "used" :
+          status === "EXPIRED" ? "expired" : "nf"
+        );
+      }
+
+      function fmtMoney(n) {
+        const x = Number(n || 0);
+        return "$" + x.toFixed(2);
+      }
+
+      async function loadStatus() {
+        if (!CODE) {
+          setStatus("MISSING");
+          document.getElementById("message").textContent = "No voucher code in URL.";
+          document.getElementById("amount").textContent = "—";
+          return;
+        }
+
+        setStatus("LOADING");
+        const url = WEBAPP + "?format=jsonp&action=status&code=" + encodeURIComponent(CODE);
+
+        const res = await jsonp(url);
+        const p = res && res.payload ? res.payload : null;
+
+        // Populate store list
+        const storeSel = document.getElementById("store");
+        storeSel.innerHTML = `<option value="">Select store…</option>`;
+        (res.stores || []).forEach(s => {
+          const opt = document.createElement("option");
+          opt.value = s;
+          opt.textContent = s;
+          storeSel.appendChild(opt);
+        });
+
+        if (!p || !p.found) {
+          setStatus(p && p.status ? p.status : "NOT_FOUND");
+          document.getElementById("message").textContent = (p && p.message) ? p.message : "Voucher not found.";
+          document.getElementById("amount").textContent = "—";
+          document.getElementById("redeemBtn").className = "btn2";
+          document.getElementById("redeemBtn").disabled = true;
+          return;
+        }
+
+        setStatus(p.status);
+        document.getElementById("amount").textContent = fmtMoney(p.value);
+        document.getElementById("message").textContent = p.message || "";
+
+        if (p.status !== "ACTIVE") {
+          document.getElementById("redeemBtn").className = "btn2";
+          document.getElementById("redeemBtn").disabled = true;
+        } else {
+          document.getElementById("redeemBtn").className = "btn";
+          document.getElementById("redeemBtn").disabled = false;
+        }
+
+        if (p.status === "USED") {
+          document.getElementById("redeemedBlock").style.display = "block";
+          document.getElementById("redeemedAt").textContent = p.redeemedAt ? new Date(p.redeemedAt).toLocaleString() : "";
+          document.getElementById("redeemedStore").textContent = p.redeemedStore || "";
+          document.getElementById("redeemedBy").textContent = p.redeemedBy || "";
+        } else {
+          document.getElementById("redeemedBlock").style.display = "none";
+        }
+      }
+
+      async function redeem() {
+        const store = document.getElementById("store").value;
+        const staff = document.getElementById("staff").value.trim();
+        const result = document.getElementById("result");
+        result.innerHTML = "";
+
+        if (!store) { result.innerHTML = `<div class="msg">❌ Please choose a store.</div>`; return; }
+        if (!staff) { result.innerHTML = `<div class="msg">❌ Please enter staff initials/name.</div>`; return; }
+
+        const btn = document.getElementById("redeemBtn");
+        btn.disabled = true;
+
+        const url = WEBAPP
+          + "?format=jsonp&action=redeem"
+          + "&code=" + encodeURIComponent(CODE)
+          + "&store=" + encodeURIComponent(store)
+          + "&staff=" + encodeURIComponent(staff);
+
+        const res = await jsonp(url);
+
+        if (!res || !res.ok) {
+          result.innerHTML = `<div class="msg">❌ ${(res && res.message) ? res.message : "Error"}</div>`;
+          btn.disabled = false;
+          return;
+        }
+
+        result.innerHTML = `<div class="msg">✅ ${res.message}<br/><b>Value:</b> ${fmtMoney(res.value)}</div>`;
+        await loadStatus();
+      }
+
+      document.getElementById("redeemBtn").addEventListener("click", redeem);
+
+      loadStatus().catch(() => {
+        setStatus("ERROR");
+        document.getElementById("message").textContent = "Could not load voucher. Check internet connection.";
+        document.getElementById("amount").textContent = "—";
       });
     </script>
   </body>
 </html>
+
