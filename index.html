@@ -9,6 +9,7 @@
       .wrap { max-width:520px; margin:0 auto; }
       .logo { text-align:center; margin: 6px 0 14px; }
       .logo img { max-width: 190px; height:auto; }
+
       .card { border:1px solid #e6e6e6; border-radius:16px; padding:16px; box-shadow:0 2px 10px rgba(0,0,0,0.04); }
       .row { margin: 10px 0; }
       .label { font-size:12px; color:#666; }
@@ -19,6 +20,7 @@
       .used { background:#fbeaea; color:#a71d2a; }
       .expired { background:#fff3cd; color:#8a6d3b; }
       .nf { background:#eee; color:#444; }
+
       select, input { width:100%; padding:10px; border-radius:12px; border:1px solid #ccc; font-size:16px; box-sizing:border-box; }
       button { width:100%; padding:12px; border-radius:12px; border:0; font-size:16px; font-weight:900; cursor:pointer; }
       .btn { background:#111; color:#fff; }
@@ -31,8 +33,11 @@
   <body>
     <div class="wrap">
       <div class="logo">
-        <img src="https://drive.google.com/thumbnail?id=1jXoGLOHmYf3qktEjOL56LL1CyzBbfQ-D&sz=w400" alt="Goldies"
-             onerror="this.style.display='none';" />
+        <img
+          src="https://drive.google.com/thumbnail?id=1jXoGLOHmYf3qktEjOL56LL1CyzBbfQ-D&sz=w400"
+          alt="Goldies"
+          onerror="this.style.display='none';"
+        />
       </div>
 
       <div class="card">
@@ -71,8 +76,8 @@
         </div>
 
         <div class="row">
-          <div class="label">Staff (initials or name)</div>
-          <input id="staff" placeholder="e.g. Kim / Jess / HO" />
+          <div class="label">Staff name</div>
+          <input id="staff" />
         </div>
 
         <div class="row">
@@ -133,6 +138,8 @@
           setStatus("MISSING");
           document.getElementById("message").textContent = "No voucher code in URL.";
           document.getElementById("amount").textContent = "—";
+          document.getElementById("redeemBtn").className = "btn2";
+          document.getElementById("redeemBtn").disabled = true;
           return;
         }
 
@@ -190,7 +197,7 @@
         result.innerHTML = "";
 
         if (!store) { result.innerHTML = `<div class="msg">❌ Please choose a store.</div>`; return; }
-        if (!staff) { result.innerHTML = `<div class="msg">❌ Please enter staff initials/name.</div>`; return; }
+        if (!staff) { result.innerHTML = `<div class="msg">❌ Please enter staff name.</div>`; return; }
 
         const btn = document.getElementById("redeemBtn");
         btn.disabled = true;
@@ -219,6 +226,8 @@
         setStatus("ERROR");
         document.getElementById("message").textContent = "Could not load voucher. Check internet connection.";
         document.getElementById("amount").textContent = "—";
+        document.getElementById("redeemBtn").className = "btn2";
+        document.getElementById("redeemBtn").disabled = true;
       });
     </script>
   </body>
