@@ -1,0 +1,28 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Goldies Voucher</title>
+  </head>
+  <body>
+    <script>
+      // Get the voucher code from the URL
+      const params = new URLSearchParams(window.location.search);
+      const code = params.get("code") || "";
+
+      // ✅ PASTE YOUR APPS SCRIPT /exec URL BELOW (no ?code= on the end)
+      const WEBAPP = "PASTE_YOUR_SCRIPT_EXEC_URL_HERE";
+
+      // Build final destination
+      const dest = WEBAPP + "?code=" + encodeURIComponent(code);
+
+      // Redirect immediately
+      window.location.replace(dest);
+    </script>
+
+    <noscript>
+      This page requires JavaScript to redirect. Please enable JavaScript.
+    </noscript>
+  </body>
+</html>
