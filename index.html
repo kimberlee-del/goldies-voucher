@@ -4,25 +4,70 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Goldies Voucher</title>
+    <style>
+      body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; margin:0; padding:24px; background:#fff; }
+      .wrap { max-width:520px; margin:0 auto; text-align:center; }
+      .card { border:1px solid #e6e6e6; border-radius:16px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,0.04); }
+      .logo { margin: 6px 0 14px; }
+      .logo img { max-width: 190px; height:auto; }
+      .title { font-size:18px; font-weight:800; margin: 6px 0 6px; }
+      .sub { color:#666; font-size:13px; margin: 0 0 16px; line-height:1.35; }
+      .code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+              background:#f6f6f6; border-radius:12px; padding:10px 12px; display:inline-block; margin: 8px 0 14px; }
+      .btn { display:block; width:100%; border:0; border-radius:14px; padding:14px 14px; font-size:16px; font-weight:800;
+             background:#111; color:#fff; cursor:pointer; }
+      .tiny { margin-top:10px; font-size:12px; color:#777; }
+      a { color:#111; }
+    </style>
   </head>
   <body>
+    <div class="wrap">
+      <div class="card">
+        <!-- Optional logo: if you want, you can point this to a hosted logo later -->
+        <div class="logo" aria-hidden="true">
+          <!-- If you DON'T want a logo here, delete this img tag -->
+          <img src="https://drive.google.com/thumbnail?id=1jXoGLOHmYf3qktEjOL56LL1CyzBbfQ-D&sz=w400"
+               alt="Goldies"
+               onerror="this.style.display='none';" />
+        </div>
+
+        <div class="title">Goldies Voucher</div>
+        <div class="sub">
+          Tap the button below to open the voucher page.
+          <br/>This avoids iPhone redirect blocks.
+        </div>
+
+        <div id="codeBox" class="code" style="display:none;"></div>
+
+        <button class="btn" id="openBtn" type="button">Open voucher</button>
+
+        <div class="tiny">
+          If it still won’t open, tap and hold the button → Open in Safari.
+        </div>
+      </div>
+    </div>
+
     <script>
-      // Get the voucher code from the URL
+      // Get voucher code from URL
       const params = new URLSearchParams(window.location.search);
       const code = params.get("code") || "";
 
-      // ✅ PASTE YOUR APPS SCRIPT /exec URL BELOW (no ?code= on the end)
+      // ✅ Your Apps Script /exec URL (keep quotes)
       const WEBAPP = "https://script.google.com/macros/s/AKfycbzzCGQ3vblEaVuOw1SZwIc-s_dmRsxfEJJtMLI-avIUaZpFXPCu9xGhvsH4fwmxpeMO/exec";
 
-      // Build final destination
       const dest = WEBAPP + "?code=" + encodeURIComponent(code);
 
-      // Redirect immediately
-      window.location.replace(dest);
-    </script>
+      // Show code (helpful for staff)
+      const codeBox = document.getElementById("codeBox");
+      if (code) {
+        codeBox.style.display = "inline-block";
+        codeBox.textContent = "Code: " + code;
+      }
 
-    <noscript>
-      This page requires JavaScript to redirect. Please enable JavaScript.
-    </noscript>
+      // User-initiated navigation (works even when auto redirects are blocked)
+      document.getElementById("openBtn").addEventListener("click", () => {
+        window.location.href = dest;
+      });
+    </script>
   </body>
 </html>
